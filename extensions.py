@@ -45,5 +45,5 @@ class Converter:
         data = response.json()
         response = data['rates']
         second = response[dquote]
-        return f'Курс валюты {self.base} к валюте {self.quote} в количестве {self.amount}: {first / second * iamount}'
+        return f'Курс валюты {self.base} к валюте {self.quote} в количестве {self.amount}: {second/first * iamount}'
 
