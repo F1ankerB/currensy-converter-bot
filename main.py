@@ -1,7 +1,8 @@
 import telebot
-import requests
+from config import TOKEN
+from extensions import Converter, ConvertionException
 access_key = '1180f53b6880fc26d766225b0a3945f0'
-TOKEN = "6372111966:AAEzjWHzs5AhesxDXmGofPSzuBCCt7xVmG4"
+
 keys={
     'доллар':'USD',
     'евро':'EUR',
@@ -30,20 +31,15 @@ def values(message:telebot.types.Message):
     bot.reply_to(message,text)
 @bot.message_handler(content_types=['text'],)
 def convert(message: telebot.types.Message):
-    base, quote, amount=message.text.split(' ')
-    dbase=keys[base]
-    dquote=keys[quote]
-    iamount=int(amount)
-    url = f"http://api.exchangeratesapi.io/v1/latest?access_key=3b0ff49e10d1e922d02ab376c50fa67d&symbols={dbase}"
-    response = requests.get(url)
-    data = response.json()
-    response = data['rates']
-    first = response[dbase]
-    url = f"http://api.exchangeratesapi.io/v1/latest?access_key=3b0ff49e10d1e922d02ab376c50fa67d&symbols={dquote}"
-    response = requests.get(url)
-    data = response.json()
-    response = data['rates']
-    second = response[dquote]
-    bot.reply_to(message,f'Курс валюты {base} к валюте {quote} в количестве {amount}: {first/second*iamount}')
+    try:
+        values = message.text.split(' ')
+        if len(values)!=3:
+            raise ConvertionException(f'Некорректное количество параметров')
+        base, quote, amount=values
+        example=Converter(base,quote,amount)
+    except Exception as e:
+        bot.reply_to(message,f'Не удалось обработать команду\n{e}')
+    else:
+        bot.reply_to(message, example.get_price(message))
 
-bot.polling()
+bot.polling(none_stop=True)
